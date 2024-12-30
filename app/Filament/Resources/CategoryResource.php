@@ -90,7 +90,7 @@ class CategoryResource extends Resource
             'index' => Pages\ListCategories::route('/'),
             'create' => Pages\CreateCategory::route('/create'),
             'edit' => Pages\EditCategory::route('/{record}/edit'),
-            'detail' => Pages\DetailCategory::route('/{record}')
+            'view' => Pages\DetailCategory::route('/{record}')
         ];
     }
 }
