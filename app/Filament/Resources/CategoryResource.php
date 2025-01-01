@@ -38,6 +38,7 @@ class CategoryResource extends Resource
                     ->columnSpanFull(),
                 Forms\Components\Textarea::make('description')
                     ->label('Deskripsi')
+                    ->required()
                     ->columnSpanFull(),
                 Forms\Components\Select::make('is_active')
                     ->label('Status')

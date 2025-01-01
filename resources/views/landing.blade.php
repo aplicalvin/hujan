@@ -73,9 +73,9 @@
                     Menu Kami
                 </h1>
                 <div class="flex gap-2 mx-auto w-fit">
+                    {{-- <x-menu-card />
                     <x-menu-card />
-                    <x-menu-card />
-                    <x-menu-card />
+                    <x-menu-card /> --}}
                 </div>
             </div>
             <!-- MENU KAMI -->
