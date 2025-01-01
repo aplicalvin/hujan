@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
@@ -18,19 +19,17 @@ Route::get('/signup', function() {
 });
 
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
-Route::post('/menu', [TransactionController::class, 'store'])->name('checkout');
 
-Route::get('/produk', function() {
-    return view('produk');
-});
+Route::get('/produk', [ProductController::class, 'index'])->name('product');
+Route::post('/produk', [ProductController::class, 'addToCart'])->name('product.add.to.cart');
+Route::post('/produk/remove', [ProductController::class, 'removeFromCart'])->name('product.remove.from.cart');
+Route::get('/produk/cart', [ProductController::class, 'getCart'])->name('product.cart');
+Route::get('/cart', function() {return view('cart');})->name('cart');
 
-Route::get('/cart', function() {
-    return view('cart');
-});
-
+Route::post('/transaction/checkout', [TransactionController::class, 'store'])->name('checkout');
 Route::get('/checkout', function() {
     return view('checkout');
-});
+})->name('payment.receipt');
 
 
 Route::middleware('auth')->group(function () {

@@ -12,4 +12,9 @@ class Transaction extends Model
     {
         return $this->belongsToMany(Menu::class, 'transaction_items')->withPivot('quantity', 'price', 'subtotal', 'product_id', 'menu_id');
     }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'transaction_items')->withPivot('quantity', 'price', 'subtotal', 'product_id', 'menu_id');
+    }
 }

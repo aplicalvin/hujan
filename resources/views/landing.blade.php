@@ -86,9 +86,9 @@
                     Produk Kami
                 </h1>
                 <div class="flex gap-2 mx-auto w-fit">
+                    {{-- <x-Produk-card />
                     <x-Produk-card />
-                    <x-Produk-card />
-                    <x-Produk-card />
+                    <x-Produk-card /> --}}
                 </div>
             </div>
             <!-- Produk KAMI -->

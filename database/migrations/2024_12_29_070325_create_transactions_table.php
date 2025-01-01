@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->enum('status', ['pending','cooking', 'completed', 'canceled'])->default('pending');
-            $table->string('invoice_number');
-            $table->string('table_number');
-            $table->integer('total_amount');
+            $table->string('invoice_number')->nullable();
+            $table->string('table_number')->nullable();
+            $table->integer('total_amount')->nullable();
             $table->integer('total_point')->nullable();
             $table->timestamps();
         });
