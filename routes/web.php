@@ -6,9 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('landing');
-});
+Route::get('/', function () {return view('landing');})->name('landing');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::post('/menu', [MenuController::class, 'addToCart'])->name('menu.add.to.cart');
 Route::post('/menu/remove', [MenuController::class, 'removeFromCart'])->name('menu.remove.from.cart');
@@ -21,6 +19,7 @@ Route::get('/produk/cart', [ProductController::class, 'getCart'])->name('product
 Route::get('/cart', function() {return view('cart');})->name('cart');
 
 Route::post('/transaction/checkout', [TransactionController::class, 'store'])->name('checkout');
+Route::get('/transaction/checkout/{invoice_number}', [TransactionController::class, 'show'])->name('transaction.status');
 Route::get('/checkout', function() {return view('checkout');})->name('payment.receipt');
 
 

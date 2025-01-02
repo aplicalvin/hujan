@@ -21,8 +21,8 @@
     <!-- INI UNTUK HEADING -->
     <div class="max-w-[960px] mt-12 py-8 mx-auto w-full">
         @php
-            $invoice_number = request("invoice_number");
-            $transaction = App\Models\Transaction::where("invoice_number", $invoice_number)->first();
+            $invoice_number = request('invoice_number');
+            $transaction = App\Models\Transaction::where('invoice_number', $invoice_number)->first();
         @endphp
         <h1 class="text-3xl font-bold mb-6 text-center">Checkout</h1>
 
@@ -37,30 +37,32 @@
 
         <!-- Status Pesanan -->
         <div
+            id="status-container"
             class="bg-zinc-700 p-6 rounded-lg shadow-lg md:mx-auto flex flex-col md:flex-row w-full justify-between items-center">
             <h2 class="text-xl font-semibold mb-4">Status Pesanan</h2>
             <div class="flex items-center gap-4">
                 <!-- Status Text -->
                 <div>
-                    <h3 class="text-lg text-center font-semibold text-yellow-500 {{ $transaction->status == "pending" ? "text-yellow-500" : ($transaction->status == "cooking" ? "text-orange-500" : ($transaction->status == "completed" ? "text-green-500" : "text-red-500")) }}">
-                        @if ($transaction->status == "pending")
+                    <h3
+                        class="text-lg text-center font-semibold {{ $transaction->status == 'pending' ? 'text-yellow-500' : ($transaction->status == 'cooking' ? 'text-orange-500' : ($transaction->status == 'completed' ? 'text-green-500' : 'text-red-500')) }}">
+                        @if ($transaction->status == 'pending')
                             Menunggu Pembayaran
-                        @elseif ($transaction->status == "cooking")
+                        @elseif ($transaction->status == 'cooking')
                             Sedang Dimasak
-                        @elseif ($transaction->status == "completed")
+                        @elseif ($transaction->status == 'completed')
                             Pesanan Selesai
-                        @elseif ($transaction->status == "cancelled")
+                        @elseif ($transaction->status == 'cancelled')
                             Pesanan Dibatalkan
                         @endif
                     </h3>
                     <p class="text-sm text-gray-400">
-                        @if ($transaction->status == "pending")
+                        @if ($transaction->status == 'pending')
                             Silakan lakukan pembayaran untuk melanjutkan proses.
-                        @elseif ($transaction->status == "cooking")
+                        @elseif ($transaction->status == 'cooking')
                             Pesanan Anda Sedang Dimasak
-                        @elseif ($transaction->status == "completed")
+                        @elseif ($transaction->status == 'completed')
                             Pesanan Anda Selesai
-                        @elseif ($transaction->status == "cancelled")
+                        @elseif ($transaction->status == 'canceled')
                             Pesanan Anda Dibatalkan
                         @endif
                     </p>
@@ -73,6 +75,60 @@
     <!-- FOOTER / MEDIA SOCIAL -->
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+    <script>
+        function updateStatus() {
+            const invoiceNumber = '{{ $invoice_number }}';
+            fetch(`{{ route('transaction.status', ['invoice_number' => $invoice_number]) }}`)
+                .then(response => response.json())
+                .then(data => {
+                    const statusContainer = document.getElementById('status-container');
+                    let statusText = '';
+                    let statusDescription = '';
+                    let statusColor = '';
+
+                    switch (data.status) {
+                        case 'pending':
+                            statusText = 'Menunggu Pembayaran';
+                            statusDescription = 'Silakan lakukan pembayaran untuk melanjutkan proses.';
+                            statusColor = 'text-yellow-500';
+                            break;
+                        case 'cooking':
+                            statusText = 'Sedang Dimasak';
+                            statusDescription = 'Pesanan Anda Sedang Dimasak';
+                            statusColor = 'text-orange-500';
+                            break;
+                        case 'completed':
+                            statusText = 'Pesanan Selesai';
+                            statusDescription = 'Pesanan Anda Selesai';
+                            statusColor = 'text-green-500';
+                            break;
+                        case 'canceled':
+                            statusText = 'Pesanan Dibatalkan';
+                            statusDescription = 'Pesanan Anda Dibatalkan';
+                            statusColor = 'text-red-500';
+                            break;
+                    }
+
+                    statusContainer.innerHTML = `
+                        <h2 class="text-xl font-semibold mb-4">Status Pesanan</h2>
+                        <div class="flex items-center gap-4">
+                            <div>
+                                <h3 class="text-lg text-center font-semibold ${statusColor}">
+                                    ${statusText}
+                                </h3>
+                                <p class="text-sm text-gray-400">
+                                    ${statusDescription}
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        // Update status setiap 5 detik
+        updateStatus();
+        setInterval(updateStatus, 5000);
+    </script>
 </body>
 
 </html>

@@ -31,6 +31,8 @@ class TransactionController extends Controller
             $transaction->table_number = $data['table_number'];
             $transaction->total_amount = $data['total_price'];
             $transaction->total_point = $data['total_points'];
+            $transaction->created_at = now();
+            $transaction->updated_at = now();
             if (auth()->check()) {
                 $transaction->user_id = auth()->user()->id;
             }
@@ -43,6 +45,8 @@ class TransactionController extends Controller
                         'price' => $data['prices_menus'][$index],
                         'subtotal' => $data['subtotal_prices_menus'][$index],
                         'menu_id' => $data['menus'][$index],
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
             }
@@ -54,6 +58,8 @@ class TransactionController extends Controller
                         'price' => $data['prices_products'][$index],
                         'subtotal' => $data['subtotal_prices_products'][$index],
                         'product_id' => $data['products'][$index],
+                        'created_at' => now(),
+                        'updated_at' => now(),
                     ]);
                 }
             }
@@ -67,5 +73,11 @@ class TransactionController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Transaction failed to create', 'error' => $exception->getMessage(), 'details' => $exception->getTrace(), 'line' => $exception->getLine()], 500);
         }
+    }
+
+    public function show($invoice_number)
+    {
+        $transaction = Transaction::where('invoice_number', $invoice_number)->first();
+        return response()->json(['status' => $transaction->status]);
     }
 }
