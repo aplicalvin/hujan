@@ -13,7 +13,7 @@
         rel="stylesheet" />
 </head>
 
-<body class="bg-zinc-800" x-data="cart()">
+<body class="bg-zinc-800" x-data="productCart()">
     <!-- INI UNTUK HEADING -->
     <!-- <h1>Heading</h1> -->
     @include('components.nav-bar')
@@ -29,8 +29,8 @@
         <div class="px-8 grid grid-cols-1 md:grid-cols-3 grid-flow-row gap-4 max-w-fit mx-auto" id="menu">
             @foreach ($products as $product)
                 <x-produk-card :product="$product"
-                    x-on:add-to-cart="$store.cart.addToCart($event.detail.product_id, $event.detail.name, $event.detail.price, $event.detail.point)"
-                    x-on:remove-from-cart="$store.cart.removeFromCart($event.detail.product_id)" />
+                    x-on:add-to-cart="$store.productCart.addToCart($event.detail.product_id, $event.detail.name, $event.detail.price, $event.detail.point)"
+                    x-on:remove-from-cart="$store.productCart.removeFromCart($event.detail.product_id)" />
             @endforeach
         </div>
         <!-- MENU KAMI -->
@@ -46,7 +46,7 @@
         <div class="flex justify-between items-center">
             <div>
                 <h2 class="text-lg font-semibold">Keranjang</h2>
-                <span id="count" class="text-sm" x-text="$store.cart.cartCount">
+                <span id="count" class="text-sm" x-text="$store.combinedCart.cartCount">
                 </span>
                 <span class="text-sm">Item</span>
             </div>
@@ -54,15 +54,15 @@
                 <p class="text-lg">
                     Total
                     <span class="font-bold text-2xl" id="cart-total"
-                        x-text="$store.cart.formatPrice($store.cart.totalPrice)">
+                        x-text="$store.combinedCart.formatPrice($store.combinedCart.totalPrice)">
                     </span>
                 </p>
             </div>
-            <button @click="$store.cart.submitOrder()"
+            <button @click="$store.combinedCart.submitOrder()"
                 class="bg-red-600 text-zinc-50 font-semibold py-2 px-4 rounded-lg">
                 Pesan
             </button>
-    </div>
+        </div>
     </div>
     <!-- KERANJANG -->
 
@@ -70,7 +70,8 @@
     <script src="//unpkg.com/alpinejs" defer></script>
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.store('cart', {
+
+            Alpine.store('combinedCart', {
                 items: [],
                 get cartCount() {
                     return this.items.reduce((count, item) => count + item.quantity, 0);
@@ -78,95 +79,13 @@
                 get totalPrice() {
                     return this.items.reduce((total, item) => total + item.quantity * item.price, 0);
                 },
-                getItemQuantity(id) {
-                    const items = this.items.filter(item => item.product_id == id);
-                    return items.reduce((total, item) => total + item.quantity, 0);
-                },
                 getCart() {
                     fetch('{{ route('product.cart') }}')
                         .then(response => response.json())
                         .then(data => {
-                            this.items = Object.values(data).map(item => ({
-                                product_id: item.product_id,
-                                name: item.name,
-                                price: Number(item.price) || 0,
-                                point: Number(item.point) || 0,
-                                quantity: Number(item.quantity) || 0,
-                                total_price: Number(item.total_price) || 0,
-                            }));
-                            console.log(this.items);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
+                            this.items = data;
+                            console.log(Object.values(data));
                         });
-                },
-                removeFromCart(id) {
-                    this.items = this.items.map(item => {
-                        if (item.product_id === id) {
-                            item.quantity -= 1;
-                            item.total_price = item.price * item.quantity;
-                        }
-                        return item;
-                    });
-                    fetch('{{ route('product.remove.from.cart') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            },
-                            body: JSON.stringify({
-                                product_id: id
-                            }),
-                        }).then(response => response.json())
-                        .then(data => {
-                            console.log(data);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                },
-                addToCart(id, name, price, point) {
-                    const existingItem = this.items.find(item => item.product_id === id);
-                    if (existingItem) {
-                        existingItem.quantity++;
-                    } else {
-                        this.items.push({
-                            product_id: id,
-                            name,
-                            price,
-                            point,
-                            quantity: 1,
-                            total_price: price * this.quantity,
-                        });
-                    }
-                    fetch('{{ route('product.add.to.cart') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            },
-                            body: JSON.stringify({
-                                product_id: id,
-                                name,
-                                price,
-                                quantity: 1,
-                                total_price: price * 1
-                            }),
-                        }).then(response => response.json())
-                        .then(data => {
-                            console.log(data);
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                },
-                submitOrder() {
-                    if (this.items.length === 0) {
-                        alert('Keranjang kosong');
-                        return;
-                    }
-
-                    window.location.href = '{{ route('cart') }}';
                 },
                 formatPrice(value) {
                     return new Intl.NumberFormat('id-ID', {
@@ -175,8 +94,111 @@
                         minimumFractionDigits: 0,
                     }).format(value);
                 },
+                submitOrder() {
+                    if (this.items.length == 0) {
+                        alert('Keranjang kosong');
+                        return;
+                    }
+
+                    window.location.href = '{{ route('cart') }}';
+                }
             });
-            Alpine.store('cart').getCart();
+
+            Alpine.store('productCart', {
+                items: [],
+                getItemQuantity(id) {
+                    const products = this.items.filter(item => item.id == id && item.type == 'product');
+                    return products.reduce((total, product) => total + product.quantity, 0);
+                },
+                getCart() {
+                    fetch('{{ route('product.cart') }}')
+                        .then(response => response.json())
+                        .then(data => {
+                            this.items = data;
+                        });
+                },
+                removeFromCart(id) {
+                    const itemIndex = this.items.findIndex(item => item.id === id);
+                    if (itemIndex !== -1) {
+                        this.items[itemIndex].quantity--;
+                        this.items[itemIndex].total_price = this.items[itemIndex].price * this.items[
+                            itemIndex].quantity;
+
+                        if (this.items[itemIndex].quantity <= 0) {
+                            this.items.splice(itemIndex, 1);
+                        }
+                    }
+                    fetch('{{ route('product.remove.from.cart') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: JSON.stringify({
+                                id: id,
+                                type: 'product',
+                            }),
+                        }).then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            Alpine.store('combinedCart').getCart();
+                            Alpine.store('productCart').getCart();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                },
+
+                addToCart(id, name, price, point) {
+                    const existingItem = this.items.find(item => item.id === id);
+
+                    if (existingItem) {
+                        existingItem.quantity++;
+                        existingItem.total_price = existingItem.price * existingItem.quantity;
+                    } else {
+                        this.items.push({
+                            id: id,
+                            type: 'product',
+                            name,
+                            price,
+                            point,
+                            quantity: 1,
+                            total_price: price * this.quantity,
+                        });
+                    }
+
+                    fetch('{{ route('product.add.to.cart') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: JSON.stringify({
+                                id: id,
+                                type: 'product',
+                                name,
+                                price,
+                                point,
+                                quantity: 1,
+                                total_price: price
+                            }),
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            Alpine.store('combinedCart').getCart();
+                            Alpine.store('productCart').getCart();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                },
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Alpine.store('combinedCart').getCart();
+            Alpine.store('productCart').getCart();
         });
     </script>
 </body>

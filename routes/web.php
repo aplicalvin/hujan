@@ -9,16 +9,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('landing');
 });
-
-Route::get('/login', function() {
-    return view('login');
-});
-
-Route::get('/signup', function() {
-    return view('signup');
-});
-
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+Route::post('/menu', [MenuController::class, 'addToCart'])->name('menu.add.to.cart');
+Route::post('/menu/remove', [MenuController::class, 'removeFromCart'])->name('menu.remove.from.cart');
+Route::get('/menu/cart', [MenuController::class, 'getCart'])->name('menu.cart');
 
 Route::get('/produk', [ProductController::class, 'index'])->name('product');
 Route::post('/produk', [ProductController::class, 'addToCart'])->name('product.add.to.cart');
@@ -27,9 +21,7 @@ Route::get('/produk/cart', [ProductController::class, 'getCart'])->name('product
 Route::get('/cart', function() {return view('cart');})->name('cart');
 
 Route::post('/transaction/checkout', [TransactionController::class, 'store'])->name('checkout');
-Route::get('/checkout', function() {
-    return view('checkout');
-})->name('payment.receipt');
+Route::get('/checkout', function() {return view('checkout');})->name('payment.receipt');
 
 
 Route::middleware('auth')->group(function () {

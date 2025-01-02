@@ -15,9 +15,10 @@ class ProductController extends Controller
 
     public function addToCart(Request $request)
     {
-        $point = Product::find($request->product_id)->point;
+        $point = Product::find($request->id)->point;
         $data = [
-            'product_id' => $request->product_id,
+            'id' => $request->id,
+            'type' => 'product',
             'name' => $request->name,
             'price' => $request->price,
             'quantity' => $request->quantity,
@@ -28,10 +29,12 @@ class ProductController extends Controller
         $cart = session()->get('cart', []);
         $existingItemIndex = -1;
 
-        foreach ($cart as $index => $item) {
-            if ($item['product_id'] == $data['product_id']) {
-                $existingItemIndex = $index;
-                break;
+        if (isset($cart[$data['id']])) {
+            foreach ($cart as $index => $item) {
+                if ($item['id'] == $data['id'] && $item['type'] == 'product') {
+                    $existingItemIndex = $index;
+                    break;
+                }
             }
         }
 
@@ -52,7 +55,7 @@ class ProductController extends Controller
         $cart = session()->get('cart', []);
 
         foreach ($cart as $index => $item) {
-            if ($item['product_id'] == $request->product_id) {
+            if ($item['id'] == $request->id && $item['type'] == 'product') {
                 if ($item['quantity'] > 1) {
                     $cart[$index]['quantity'] -= 1;
                     $cart[$index]['total_price'] = $cart[$index]['price'] * $cart[$index]['quantity'];

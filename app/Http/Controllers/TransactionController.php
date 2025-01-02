@@ -14,10 +14,13 @@ class TransactionController extends Controller
             $data = $request->validate([
                 'menus' => 'array',
                 'products' => 'array',
-                'quantities' => 'required|array',
-                'prices' => 'required|array',
+                'quantities_menus' => 'required|array',
+                'quantities_products' => 'required|array',
+                'prices_menus' => 'required|array',
+                'prices_products' => 'required|array',
                 'table_number' => 'required|integer',
-                'subtotal_prices' => 'required|array',
+                'subtotal_prices_menus' => 'required|array',
+                'subtotal_prices_products' => 'required|array',
                 'total_points' => 'required|integer',
                 'total_price' => 'required|integer',
             ]);
@@ -36,9 +39,9 @@ class TransactionController extends Controller
             if (!empty($data['menus'])) {
                 foreach ($data['menus'] as $index => $menu) {
                     $transaction->menus()->attach($menu, [
-                        'quantity' => $data['quantities'][$index],
-                        'price' => $data['prices'][$index],
-                        'subtotal' => $data['subtotal_prices'][$index],
+                        'quantity' => $data['quantities_menus'][$index],
+                        'price' => $data['prices_menus'][$index],
+                        'subtotal' => $data['subtotal_prices_menus'][$index],
                         'menu_id' => $data['menus'][$index],
                     ]);
                 }
@@ -47,9 +50,9 @@ class TransactionController extends Controller
             if (!empty($data['products'])) {
                 foreach ($data['products'] as $index => $product) {
                     $transaction->products()->attach($product, [
-                        'quantity' => $data['quantities'][$index],
-                        'price' => $data['prices'][$index],
-                        'subtotal' => $data['subtotal_prices'][$index],
+                        'quantity' => $data['quantities_products'][$index],
+                        'price' => $data['prices_products'][$index],
+                        'subtotal' => $data['subtotal_prices_products'][$index],
                         'product_id' => $data['products'][$index],
                     ]);
                 }

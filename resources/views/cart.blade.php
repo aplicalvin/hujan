@@ -25,11 +25,15 @@
         }
 
         $filteredItems = array_filter($cart, function ($item) {
-            return isset($item['product_id']) && !isset($item['menu_id']);
+            return isset($item['type']) && $item['type'] == 'product';
+        });
+
+        $filteredMenus = array_filter($cart, function ($item) {
+            return isset($item['type']) && $item['type'] == 'menu';
         });
 
         $product_id = array_map(function ($item) {
-            return $item['product_id'];
+            return $item['id'];
         }, $filteredItems);
 
         $product_quantity = array_map(function ($item) {
@@ -54,6 +58,34 @@
             return $item['total_price'];
         }, $filteredItems);
 
+        $menu_id = array_map(function ($item) {
+            return $item['id'];
+        }, $filteredMenus);
+
+        $menu_quantity = array_map(function ($item) {
+            return $item['quantity'];
+        }, $filteredMenus);
+
+        $menu_prices = array_map(function ($item) {
+            return $item['price'];
+        }, $filteredMenus);
+
+        $menu_subtotal_prices = array_map(function ($item) {
+            return $item['total_price'];
+        }, $filteredMenus);
+
+        $menu_total_amount = 0;
+        foreach ($filteredMenus as $item) {
+            $menu_total_amount += $item['total_price'];
+        }
+
+        $menu_total_points = 0;
+        foreach ($filteredMenus as $item) {
+            $menu_total_points += $item['point'];
+        }
+
+        $total_points = $product_total_points + $menu_total_points;
+        $total_price = $product_total_amount + $menu_total_amount;
     @endphp
     <!-- INI UNTUK HEADING -->
     <nav class="bg-slate-100 px-24 py-6">
@@ -120,15 +152,20 @@
                     }
 
                     const data = {
-                        products: {{ json_encode($product_id) }},
-                        menus: [],
-                        quantities: {{ json_encode($product_quantity) }},
-                        prices: {{ json_encode($product_prices) }},
+                        products: @json($product_id),
+                        menus: @json($menu_id),
+                        quantities_products: @json($product_quantity),
+                        quantities_menus: @json($menu_quantity),
+                        prices_products: @json($product_prices),
+                        prices_menus: @json($menu_prices),
+                        subtotal_prices_products: @json($product_subtotal_prices),
+                        subtotal_prices_menus: @json($menu_subtotal_prices),
                         table_number: parseInt(this.tableNumber),
-                        subtotal_prices: {{ json_encode($product_subtotal_prices) }},
-                        total_points: {{ $product_total_points }},
-                        total_price: {{ $product_total_amount }}
+                        total_points: {{ $total_points }},
+                        total_price: {{ $total_price }}
                     };
+
+                    console.log(data);
 
                     fetch('{{ route('checkout') }}', {
                             method: 'POST',
@@ -142,7 +179,7 @@
                             alert('Transaksi berhasil');
                             this.items = [];
                             this.tableNumber = '';
-                            console.log(data.data.invoice_number);
+                            console.log(data);
 
                             const url = new URL('{{ route('payment.receipt') }}');
                             url.searchParams.append('invoice_number', data.data.invoice_number);

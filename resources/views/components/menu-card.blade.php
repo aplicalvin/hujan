@@ -9,12 +9,12 @@
 
         <div class="gap-4 text-center justify-between items-center flex">
             <div
-                @click="$store.cart.removeFromCart({{ $menu->id }})"
+                @click="$store.menuCart.removeFromCart({{ $menu->id }})"
                 class="bg-zinc-600 border border-zinc-500 w-8 h-8 text-center justify-center items-center flex rounded-xl font-semibold text-zinc-200 cursor-pointer">
                 -
             </div>
-            <h1 class="text-white font-bold text-xl" x-text="$store.cart.getItemQuantity({{ $menu->id }})"></h1>
-            <div @click="$store.cart.addToCart({{ $menu->id }}, '{{ $menu->name }}', {{ $menu->price }}, {{ $menu->point }})"
+            <h1 class="text-white font-bold text-xl" x-text="$store.menuCart.getItemQuantity({{ $menu->id }})"></h1>
+            <div @click="$store.menuCart.addToCart({{ $menu->id }}, '{{ $menu->name }}', {{ $menu->price }}, {{ $menu->point }})"
                 class="bg-zinc-600 border border-zinc-500 w-8 h-8 text-center justify-center items-center flex rounded-xl font-semibold text-zinc-200 cursor-pointer">
                 +
             </div>

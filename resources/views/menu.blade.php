@@ -13,7 +13,7 @@
         rel="stylesheet" />
 </head>
 
-<body class="bg-zinc-800" x-data="cart()">
+<body class="bg-zinc-800" x-data="menuCart()">
     {{-- @dd($menus) --}}
     <!-- INI UNTUK HEADING -->
     <!-- <h1>Heading</h1> -->
@@ -52,7 +52,7 @@
         <div class="flex justify-between items-center">
             <div>
                 <h2 class="text-lg font-semibold">Keranjang</h2>
-                <span id="count" class="text-sm" x-text="$store.cart.cartCount">
+                <span id="count" class="text-sm" x-text="$store.combinedCart.cartCount">
                 </span>
                 <span class="text-sm">Item</span>
             </div>
@@ -60,94 +60,36 @@
                 <p class="text-lg">
                     Total
                     <span class="font-bold text-2xl" id="cart-total"
-                        x-text="$store.cart.formatPrice($store.cart.totalPrice)">
+                        x-text="$store.combinedCart.formatPrice($store.combinedCart.totalPrice)">
                     </span>
                 </p>
             </div>
-            <divclass="flex gap-4">
-            <input type="text" id="table-number"
-                class="w-28 text-sm text-center text-black outline-none border border-zinc-600 rounded-lg"
-                placeholder="Nomor Meja" x-model="$store.cart.tableNumber">
-            <button @click="$store.cart.submitOrder()"
+            <button @click="$store.combinedCart.submitOrder()"
                 class="bg-red-600 text-zinc-50 font-semibold py-2 px-4 rounded-lg">
                 Pesan
             </button>
         </div>
-    </div>
     </div>
     <!-- Keranjang -->
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
     <script src="//unpkg.com/alpinejs" defer></script>
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.store('cart', {
+
+            Alpine.store('combinedCart', {
                 items: [],
-                tableNumber: '',
                 get cartCount() {
                     return this.items.reduce((count, item) => count + item.quantity, 0);
                 },
                 get totalPrice() {
                     return this.items.reduce((total, item) => total + item.quantity * item.price, 0);
                 },
-                getItemQuantity(id) {
-                    const item = this.items.find(item => item.id === id);
-                    return item ? item.quantity : 0;
-                },
-                removeFromCart(id) {
-                    this.items = this.items.filter(item => item.id !== id);
-                },
-                addToCart(id, name, price, point) {
-                    const existingItem = this.items.find(item => item.id === id);
-                    if (existingItem) {
-                        existingItem.quantity++;
-                    } else {
-                        this.items.push({
-                            id,
-                            name,
-                            price,
-                            point,
-                            quantity: 1
-                        });
-                    }
-                },
-                submitOrder() {
-                    if (this.items.length === 0) {
-                        alert('Keranjang kosong');
-                        return;
-                    }
-
-                    if (!this.tableNumber.trim()) {
-                        alert('Nomor meja harus diisi');
-                        return;
-                    }
-
-                    const data = {
-                        menus: this.items.map(item => item.id),
-                        quantities: this.items.map(item => item.quantity),
-                        prices: this.items.map(item => item.price),
-                        table_number: parseInt(this.tableNumber),
-                        subtotal_prices: this.items.map(item => item.quantity * item.price),
-                        total_points: this.items.reduce((total, item) => total + item.quantity * item
-                            .point, 0),
-                        total_price: this.items.reduce((total, item) => total + item.quantity * item
-                            .price, 0)
-                    };
-
-                    fetch('{{ route('checkout') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            },
-                            body: JSON.stringify(data),
-                        }).then(response => response.json())
+                getCart() {
+                    fetch('{{ route('menu.cart') }}')
+                        .then(response => response.json())
                         .then(data => {
-                            alert('Transaksi berhasil');
-                            this.items = [];
-                            this.tableNumber = '';
-                        }).catch(error => {
-                            console.error('Error:', error);
-                            alert('Transaksi gagal: ' + data.message);
+                            this.items = data;
+                            console.log(this.items);
                         });
                 },
                 formatPrice(value) {
@@ -157,7 +99,109 @@
                         minimumFractionDigits: 0,
                     }).format(value);
                 },
+                submitOrder() {
+                    if (this.items.length == 0) {
+                        alert('Keranjang kosong');
+                        return;
+                    }
+
+                    window.location.href = '{{ route('cart') }}';
+                }
             });
+
+            Alpine.store('menuCart', {
+                items: [],
+                getItemQuantity(id) {
+                    const menus = this.items.filter(item => item.id == id && item.type == 'menu');
+                    return menus.reduce((total, menu) => total + menu.quantity, 0);
+                },
+                getCart() {
+                    fetch('{{ route('menu.cart') }}')
+                        .then(response => response.json())
+                        .then(data => {
+                            this.items = data;
+                        });
+                },
+                removeFromCart(id) {
+                    const itemIndex = this.items.findIndex(item => item.id === id);
+                    if (itemIndex !== -1) {
+                        this.items[itemIndex].quantity--;
+                        this.items[itemIndex].total_price = this.items[itemIndex].price * this.items[
+                            itemIndex].quantity;
+
+                        if (this.items[itemIndex].quantity <= 0) {
+                            this.items.splice(itemIndex, 1);
+                        }
+                    }
+                    fetch('{{ route('menu.remove.from.cart') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: JSON.stringify({
+                                id: id,
+                                type: 'menu',
+                            }),
+                        }).then(response => response.json())
+                        .then(data => {
+                            Alpine.store('combinedCart').getCart();
+                            Alpine.store('menuCart').getCart();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                },
+                addToCart(id, name, price, point) {
+                    const existingItem = this.items.find(item => item.id === id);
+
+                    if (existingItem) {
+                        existingItem.quantity++;
+                        existingItem.total_price = existingItem.price * existingItem.quantity;
+                    } else {
+                        this.items.push({
+                            id: id,
+                            type: 'menu',
+                            name,
+                            price,
+                            point,
+                            quantity: 1,
+                            total_price: price * this.quantity,
+                        });
+                    }
+
+                    fetch('{{ route('menu.add.to.cart') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            },
+                            body: JSON.stringify({
+                                id: id,
+                                type: 'menu',
+                                name,
+                                price,
+                                point,
+                                quantity: 1,
+                                total_price: price
+                            }),
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            Alpine.store('combinedCart').getCart();
+                            Alpine.store('menuCart').getCart();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Alpine.store('combinedCart').getCart();
+            Alpine.store('menuCart').getCart();
         });
     </script>
 </body>
