@@ -125,7 +125,6 @@
                 });
         }
 
-        // Update status setiap 5 detik
         updateStatus();
         setInterval(updateStatus, 5000);
     </script>

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\User;
+use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,13 +16,13 @@ class TransactionController extends Controller
             $data = $request->validate([
                 'menus' => 'array',
                 'products' => 'array',
-                'quantities_menus' => 'required|array',
-                'quantities_products' => 'required|array',
-                'prices_menus' => 'required|array',
-                'prices_products' => 'required|array',
+                'quantities_menus' => 'array',
+                'quantities_products' => 'array',
+                'prices_menus' => 'array',
+                'prices_products' => 'array',
                 'table_number' => 'required|integer',
-                'subtotal_prices_menus' => 'required|array',
-                'subtotal_prices_products' => 'required|array',
+                'subtotal_prices_menus' => 'array',
+                'subtotal_prices_products' => 'array',
                 'total_points' => 'required|integer',
                 'total_price' => 'required|integer',
             ]);
@@ -67,6 +69,11 @@ class TransactionController extends Controller
             DB::commit();
 
             session()->flush();
+
+            $recipient = User::query()->where('role', 'admin')->first();
+            Notification::make()
+                ->title('Saved successfully')
+                ->sendToDatabase($recipient);
 
             return response()->json(['message' => 'Transaction created successfully', 'data' => $transaction]);
         } catch (\Exception $exception) {

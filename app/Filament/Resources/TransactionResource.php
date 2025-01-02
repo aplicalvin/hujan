@@ -60,6 +60,7 @@ class TransactionResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')->label('Tanggal Transaksi')->dateTime('d-m-Y H:i:s'),
             ])
             ->defaultSort('created_at', 'desc')
+            ->poll('5s')
             ->filters([
                 //
             ])
