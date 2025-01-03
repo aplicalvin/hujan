@@ -126,6 +126,8 @@
                 Total: <span class="text-red-500">Rp {{ number_format($total, 0, ',', '.') }}</span>
             </h2>
             <div class="flex gap-4">
+                <input type="text" class="w-full p-2 rounded-lg text-black" placeholder="Kode Voucher"
+                    x-model="voucherCode">
                 <input type="number" class="w-full p-2 rounded-lg text-black" placeholder="Nomor Meja"
                     x-model="tableNumber">
                 <button type="button" class="bg-red-600 text-white py-2 px-6 rounded-lg shadow hover:bg-red-700"
@@ -145,6 +147,7 @@
         function checkout() {
             return {
                 tableNumber: '',
+                voucherCode: '',
                 submitOrder() {
                     if (this.tableNumber == '') {
                         alert('Nomor Meja Harus Diisi');
@@ -161,6 +164,7 @@
                         subtotal_prices_products: @json($product_subtotal_prices),
                         subtotal_prices_menus: @json($menu_subtotal_prices),
                         table_number: parseInt(this.tableNumber),
+                        voucher_code: this.voucherCode,
                         total_points: {{ $total_points }},
                         total_price: {{ $total_price }}
                     };

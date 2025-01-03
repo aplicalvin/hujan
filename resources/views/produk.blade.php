@@ -150,7 +150,9 @@
                 },
 
                 addToCart(id, name, price, point) {
+                    console.log('Adding to cart:', { id, name, price, point });
                     const existingItem = this.items.find(item => item.id === id);
+                    console.log('Existing item:', existingItem);
 
                     if (existingItem) {
                         existingItem.quantity++;
@@ -163,7 +165,7 @@
                             price,
                             point,
                             quantity: 1,
-                            total_price: price * this.quantity,
+                            total_price: price,
                         });
                     }
 
@@ -185,7 +187,7 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            console.log(data);
+                            console.log('Server response:', data);
                             Alpine.store('combinedCart').getCart();
                             Alpine.store('productCart').getCart();
                         })

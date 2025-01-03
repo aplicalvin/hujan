@@ -54,4 +54,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function vouchers()
+    {
+        return $this->belongsToMany(Voucher::class, table: 'user_vouchers')->withPivot('user_id', 'voucher_id', 'redeemed_at');
+    }
 }

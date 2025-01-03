@@ -158,6 +158,9 @@
                     if (existingItem) {
                         existingItem.quantity++;
                         existingItem.total_price = existingItem.price * existingItem.quantity;
+                    } else if (this.items.length == 1) {
+                        this.items[0].quantity++;
+                        this.items[0].total_price = this.items[0].price * this.items[0].quantity;
                     } else {
                         this.items.push({
                             id: id,

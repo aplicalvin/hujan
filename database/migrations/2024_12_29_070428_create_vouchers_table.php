@@ -1,4 +1,4 @@
-<?php
+2<?php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('point_required');
             $table->decimal('discount',10,2)->default(0);
             $table->date('expired_date')->nullable();
-            
+            $table->string('voucher_code')->unique();
             $table->timestamps();
         });
     }
