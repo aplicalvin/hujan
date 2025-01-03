@@ -8,6 +8,7 @@ This is an [Laravel](https://laravel.com) project
 
    ```bash
    composer install
+   npm install
    ```
 2. Generate App Key
     
