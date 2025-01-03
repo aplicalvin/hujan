@@ -73,9 +73,12 @@
                     Menu Kami
                 </h1>
                 <div class="flex gap-2 mx-auto w-fit">
-                    <x-menu-card />
-                    <x-menu-card />
-                    <x-menu-card />
+                    @php
+                        $menus = App\Models\Menu::query()->paginate(3);
+                    @endphp
+                    @foreach ($menus as $menu)
+                        <x-menu-card :menu="$menu" />
+                    @endforeach
                 </div>
             </div>
             <!-- MENU KAMI -->
@@ -86,9 +89,12 @@
                     Produk Kami
                 </h1>
                 <div class="flex gap-2 mx-auto w-fit">
-                    <x-Produk-card />
-                    <x-Produk-card />
-                    <x-Produk-card />
+                    @php
+                        $products = App\Models\Product::query()->paginate(3);
+                    @endphp
+                    @foreach ($products as $product)
+                        <x-Produk-card :product="$product" />
+                    @endforeach
                 </div>
             </div>
             <!-- Produk KAMI -->
