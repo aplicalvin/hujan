@@ -89,4 +89,18 @@ class VoucherResource extends Resource
             'edit' => Pages\EditVoucher::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->role === 'admin';
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        if (auth()->user()->role !== 'admin') {
+            abort(403);
+        }
+        
+        return parent::getEloquentQuery();
+    }
 }
